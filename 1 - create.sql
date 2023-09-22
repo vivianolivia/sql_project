@@ -1,0 +1,73 @@
+CREATE DATABASE BluejackJewelry
+GO
+USE BluejackJewelry
+GO
+
+CREATE TABLE MsStaff(
+	StaffID CHAR(5) PRIMARY KEY CHECK (StaffID LIKE 'ST[0-9][0-9][0-9]'),
+	StaffName VARCHAR(50) CHECK (LEN(StaffName) > 3) NOT NULL,
+	StaffGender VARCHAR(10) CHECK (StaffGender LIKE 'Male' OR StaffGender LIKE 'Female') NOT NULL,
+	StaffEmail VARCHAR(50) CHECK (StaffEmail LIKE '%st.com') NOT NULL,
+	StaffAddress VARCHAR(50) NOT NULL,
+	StaffPhone VARCHAR(20) CHECK (StaffPhone LIKE '08%') NOT NULL
+)
+
+CREATE TABLE MsCustomer(
+	CustomerID CHAR(5) PRIMARY KEY CHECK (CustomerID LIKE 'CU[0-9][0-9][0-9]'),
+	CustomerName VARCHAR(50) CHECK (LEN(CustomerName) > 3) NOT NULL,
+	CustomerGender VARCHAR(10) CHECK (CustomerGender LIKE 'Male' OR CustomerGender LIKE 'Female') NOT NULL,
+	CustomerEmail VARCHAR(50) NOT NULL,
+	CustomerAddress VARCHAR(50) NOT NULL,
+	CustomerPhone VARCHAR(20) CHECK (CustomerPhone LIKE '08%') NOT NULL
+)
+
+CREATE TABLE MsVendor(
+	VendorID CHAR(5) PRIMARY KEY CHECK (VendorID LIKE 'VE[0-9][0-9][0-9]'),
+	VendorName VARCHAR(50) CHECK (LEN(VendorName) > 3) NOT NULL,
+	VendorEmail VARCHAR(50) CHECK (VendorEmail LIKE '%ve.com') NOT NULL,
+	VendorAddress VARCHAR(50)  CHECK (VendorAddress LIKE '% [0-9] street') NOT NULL,
+	VendorPhone VARCHAR(20) CHECK (VendorPhone LIKE '08%') NOT NULL
+)
+
+CREATE TABLE MsJewelryType(
+	JewelryTypeID CHAR(5) PRIMARY KEY CHECK (JewelryTypeID LIKE 'JT[0-9][0-9][0-9]'),
+	JewelryTypeName VARCHAR(50) NOT NULL
+)
+
+CREATE TABLE MsJewelry(
+	JewelryID CHAR(5) PRIMARY KEY CHECK (JewelryID LIKE 'JW[0-9][0-9][0-9]'),
+	JewelryTypeID CHAR(5) FOREIGN KEY REFERENCES MsJewelryType(JewelryTypeID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	JewelryName VARCHAR(50) NOT NULL,
+	JewelryWeight INT CHECK (JewelryWeight >= 10 AND JewelryWeight <=100) NOT NULL,
+	JewelryPurchasePrice INT NOT NULL,
+	JewelrySalesPrice INT NOT NULL,
+	JewelryStock INT NOT NULL
+)
+
+CREATE TABLE PurchaseHeader(
+	PurchaseID CHAR(5) PRIMARY KEY CHECK (PurchaseID LIKE 'PU[0-9][0-9][0-9]'),
+	StaffID CHAR(5) FOREIGN KEY REFERENCES MsStaff(StaffID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	VendorID CHAR(5) FOREIGN KEY REFERENCES MsVendor(VendorID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	PurchaseDate DATE NOT NULL,
+)
+
+CREATE TABLE PurchaseDetail(
+	PurchaseID CHAR(5) FOREIGN KEY REFERENCES PurchaseHeader(PurchaseID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	JewelryID CHAR(5) FOREIGN KEY REFERENCES MsJewelry(JewelryID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	PurchaseQty INT CHECK (PurchaseQty > 0) NOT NULL,
+	PRIMARY KEY(PurchaseID, JewelryID)
+)
+
+CREATE TABLE SalesHeader(
+	SalesID CHAR(5) PRIMARY KEY CHECK (SalesID LIKE 'SL[0-9][0-9][0-9]'),
+	StaffID CHAR(5) FOREIGN KEY REFERENCES MsStaff(StaffID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	CustomerID CHAR(5) FOREIGN KEY REFERENCES MsCustomer(CustomerID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	SalesDate DATE NOT NULL,
+)
+
+CREATE TABLE SalesDetail(
+	SalesID CHAR(5) FOREIGN KEY REFERENCES SalesHeader(SalesID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	JewelryID CHAR(5) FOREIGN KEY REFERENCES MsJewelry(JewelryID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+	SalesQty INT CHECK (SalesQty > 0) NOT NULL,
+	PRIMARY KEY(SalesID, JewelryID)
+)
